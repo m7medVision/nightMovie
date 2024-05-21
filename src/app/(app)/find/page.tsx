@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardTitle } from '@/components/ui/card'
 
 export default function FindPage() {
   const [output, setOutput] = useState<Movie[] | null>(null)
@@ -89,11 +90,11 @@ export default function FindPage() {
     setOutput(null)
   }
   useEffect(() => {
-    const storedData = JSON.parse(localStorage.getItem('formData') || '{}');
+    const storedData = JSON.parse(localStorage.getItem('formData') || '{}')
     if (storedData) {
-      form.reset(storedData);
+      form.reset(storedData)
     }
-  }, [form]);
+  }, [form])
   return (
     <div className="container mx-auto py-8 w-1/2">
       <h1 className="text-3xl font-bold mb-6">Find Your Next Movie</h1>
@@ -179,15 +180,17 @@ export default function FindPage() {
       </form>
 
       {output && (
-        <div className="bg-gray-100 rounded-md p-6">
-          <h2 className="text-2xl font-bold mb-4">Recommended Movies</h2>
-          {output.map((movie) => (
-            <div key={movie.movie} className="bg-white shadow-md rounded-md p-4 mb-4">
-              <h3 className="text-xl font-bold">{movie.movie}</h3>
-              <p>Love Rating: {movie.love}</p>
-            </div>
-          ))}
-        </div>
+        <Card className="bg-primary-foreground p-5">
+          <CardTitle className='p-4'>Recommendations</CardTitle>
+          <CardContent>
+            {output.map((movie) => (
+              <div key={movie.movie} className="bg-white shadow-md rounded-md p-4 mb-4">
+                <h3 className="text-lg font-bold">{movie.movie}</h3>
+                <p>Rating according to your likes: {movie.love}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       )}
     </div>
   )
