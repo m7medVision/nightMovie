@@ -5,8 +5,8 @@ import type { Movie } from '@/types'
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-
-const genAI = new GoogleGenerativeAI('AIzaSyCGyJ5SzIIrBolfTLS7zwbDgZ8RPQms0eo')
+const API_KEY = process.env.GOOGLE_GEN_AI_API_KEY || ''
+const genAI = new GoogleGenerativeAI(API_KEY)
 
 const model = genAI.getGenerativeModel({
   model: 'gemini-1.5-flash-latest',

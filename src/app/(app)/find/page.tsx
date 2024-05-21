@@ -1,14 +1,13 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Movie } from '@/types'
-import { movieSchema } from "@/types"
+import { movieSchema } from '@/types'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-
-const categories = [
-  'Action', 'Comedy', 'Drama', 'Thriller', 'Sci-Fi', 'Animation'
-]
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 
 export default function FindPage() {
   const [output, setOutput] = useState<Movie[] | null>(null)
@@ -18,21 +17,53 @@ export default function FindPage() {
       categories: [],
       movies: [],
       mood: [],
-    }
-  });
+    },
+  })
 
-  const { control, register, handleSubmit, reset } = form;
-  const { fields: moviesFields, append: appendMovie, remove: removeMovie } = useFieldArray({
+  const { control, register, handleSubmit, reset, setValue } = form
+  const {
+    fields: moviesFields,
+    append: appendMovie,
+    remove: removeMovie,
+  } = useFieldArray({
     control,
-    name: 'movies',
-  });
+    rules: {
+      minLength: 1,
+    },
+    name: 'movies' as never,
+  })
 
-  const { fields: moodFields, append: appendMood, remove: removeMood } = useFieldArray({
+  const {
+    fields: moodFields,
+    append: appendMood,
+    remove: removeMood,
+  } = useFieldArray({
     control,
-    name: 'mood',
-  });
+    rules: {
+      minLength: 1,
+    },
+    name: 'mood' as never,
+  })
+
+  const {
+    fields: categoriesFields,
+    append: appendCategory,
+    remove: removeCategory,
+  } = useFieldArray({
+    control,
+    rules: {
+      minLength: 1,
+    },
+    name: 'categories' as never,
+  })
 
   const onSubmit = async (data: z.infer<typeof movieSchema>) => {
+    const formData = {
+      categories: form.getValues('categories'),
+      movies: form.getValues('movies'),
+      mood: form.getValues('mood'),
+    }
+    localStorage.setItem('formData', JSON.stringify(formData))
     try {
       const response = await fetch('/api/getMovies', {
         method: 'POST',
@@ -40,118 +71,110 @@ export default function FindPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
-      });
+      })
 
       if (response.ok) {
-        const recommendations = await response.json();
-        setOutput(recommendations);
+        const recommendations = await response.json()
+        setOutput(recommendations)
       } else {
-        console.error('Failed to fetch recommendations');
+        console.error('Failed to fetch recommendations')
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error:', error)
     }
-  };
-
-  const handleReset = () => {
-    reset();
-    setOutput(null);
   }
 
+  const handleReset = () => {
+    reset()
+    setOutput(null)
+  }
+  useEffect(() => {
+    const storedData = JSON.parse(localStorage.getItem('formData') || '{}');
+    if (storedData) {
+      form.reset(storedData);
+    }
+  }, [form]);
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="container mx-auto py-8 w-1/2">
       <h1 className="text-3xl font-bold mb-6">Find Your Next Movie</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="mb-6">
         <div className="mb-4">
-          <label htmlFor="categories" className="block text-gray-700 font-bold mb-2">Categories</label>
-          <div className="grid grid-cols-3 gap-2">
-            {categories.map((category) => (
-              <div key={category} className="flex items-center">
-                <input
-                  {...register('categories')}
-                  type="checkbox"
-                  value={category}
-                  id={category}
-                  className="form-checkbox h-5 w-5 text-indigo-600"
+          <Label>Categories</Label>
+          <div className="flex flex-wrap gap-2">
+            {categoriesFields.map((field, index) => (
+              <div key={field.id} className="flex gap-2 w-full">
+                <Input
+                  {...register(`categories.${index}`)}
+                  type="text"
+                  placeholder={`Category ${index + 1}`}
                 />
-                <label htmlFor={category} className="ml-2 text-gray-700">
-                  {category}
-                </label>
+                <Button variant={'destructive'} type="button" onClick={() => removeCategory(index)}>
+                  Remove
+                </Button>
               </div>
             ))}
+          </div>
+          <Button
+            type="button"
+            onClick={() => appendCategory('')}
+            variant="outline"
+            className="mt-2"
+          >
+            Add Category
+          </Button>
+        </div>
+        <div className="mb-4">
+          <Label>Past Favorites</Label>
+          <div className="flex flex-wrap gap-2">
+            {moviesFields.map((field, index) => (
+              <div key={field.id} className="flex gap-2 w-full">
+                <Input
+                  {...register(`movies.${index}`)}
+                  type="text"
+                  placeholder={`Movie ${index + 1}`}
+                />
+                <Button variant={'destructive'} type="button" onClick={() => removeMovie(index)}>
+                  Remove
+                </Button>
+              </div>
+            ))}
+            <Button
+              type="button"
+              onClick={() => appendMovie('')}
+              variant="outline"
+              className="mt-2"
+            >
+              Add Movie
+            </Button>
           </div>
         </div>
 
         <div className="mb-4">
-          <label htmlFor="movies" className="block text-gray-700 font-bold mb-2">Past Favorites</label>
-          {moviesFields.map((field, index) => (
-            <div key={field.id} className="flex items-center gap-2 mb-2">
-              <input
-                {...register(`movies.${index}`)}
-                type="text"
-                placeholder={`Movie ${index + 1}`}
-                className="form-input w-full py-2 px-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
-              />
-              <button
-                type="button"
-                onClick={() => removeMovie(index)}
-                className="text-red-500 hover:text-red-700"
-              >
-                Remove
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={() => appendMovie('')}
-            className="mt-2 text-indigo-600 hover:text-indigo-800"
-          >
-            Add Movie
-          </button>
-        </div>
-
-        <div className="mb-4">
-          <label htmlFor="mood" className="block text-gray-700 font-bold mb-2">Mood</label>
-          {moodFields.map((field, index) => (
-            <div key={field.id} className="flex items-center gap-2 mb-2">
-              <input
-                {...register(`mood.${index}`)}
-                type="text"
-                placeholder={`Mood ${index + 1}`}
-                className="form-input w-full py-2 px-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
-              />
-              <button
-                type="button"
-                onClick={() => removeMood(index)}
-                className="text-red-500 hover:text-red-700"
-              >
-                Remove
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={() => appendMood('')}
-            className="mt-2 text-indigo-600 hover:text-indigo-800"
-          >
-            Add Mood
-          </button>
+          <Label>Mood</Label>
+          <div className="flex flex-wrap gap-2">
+            {moodFields.map((field, index) => (
+              <div key={field.id} className="flex gap-2 w-full">
+                <Input
+                  {...register(`mood.${index}`)}
+                  type="text"
+                  placeholder={`Mood ${index + 1}`}
+                />
+                <Button type="button" variant="destructive" onClick={() => removeMood(index)}>
+                  Remove
+                </Button>
+              </div>
+            ))}
+            <Button type="button" onClick={() => appendMood('')} variant="outline" className="mt-2">
+              Add Mood
+            </Button>
+          </div>
         </div>
 
         <div className="flex justify-between">
-          <button
-            type="submit"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Get Recommendations
-          </button>
-          <button
-            type="button"
-            onClick={handleReset}
-            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
-          >
+          <Button type="submit">Get Recommendations</Button>
+          <Button type="button" onClick={handleReset} variant={'destructive'}>
             Reset
-          </button>
+          </Button>
         </div>
       </form>
 
