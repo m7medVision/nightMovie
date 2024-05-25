@@ -100,14 +100,11 @@ export default function HomePage() {
           </form>
         </div>
       </div>
-      {/* ========== END MAIN CONTENT ========== */}
-      {/* ========== FOOTER ========== */}
       <footer className="absolute bottom-0 inset-x-0 text-center py-5">
         <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-sm text-white/50">© 2024 NightMovie. A product of M7medvision</p>
         </div>
       </footer>
-      {/* ========== END FOOTER ========== */}
     </div>
   )
 }
