@@ -98,12 +98,20 @@ export default function FindPage() {
 
       if (response.ok) {
         const recommendations = await response.json()
-        setOutput(recommendations)
+        // check type of recommendations if it is an array of movies if not log error
+        if (
+          Array.isArray(recommendations) &&
+          recommendations.every((movie) => movie.movie && movie.love)
+        ) {
+          setOutput(recommendations)
+        } else {
+          setOutput(null)
+        }
       } else {
-        console.error('Failed to fetch recommendations')
+        setOutput(null)
       }
     } catch (error) {
-      console.error('Error:', error)
+      setOutput(null)
     }
   }
 
@@ -195,7 +203,7 @@ export default function FindPage() {
 
         <div className="flex justify-between">
           <Button disabled={form.formState.isSubmitting} type="submit" className="flex gap-2">
-            {form.formState.isSubmitting ? (<Spiner />) : ""}
+            {form.formState.isSubmitting ? <Spiner /> : ''}
             Find Movies
           </Button>
           <Button type="button" onClick={handleReset} variant={'destructive'}>
