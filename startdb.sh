@@ -1,28 +1,37 @@
-
 #!/usr/bin/env bash
 
-DB_CONTAINER_NAME="next-payload-3"
+# Define database details (improve security by storing them elsewhere)
+DB_NAME="next-payload-3"
+DB_USER="payload"
+DB_HOST="localhost"  # Assuming container runs on the same machine
+DB_PASSWORD="password"  # Avoid using "password" in production
 
-if ! [ -x "$(command -v docker)" ]; then
-  echo "Docker is not installed. Please install docker and try again.\nDocker install guide: https://docs.docker.com/engine/install/"
+# Check for docker installation
+if ! command -v docker >/dev/null 2>&1; then
+  echo "Error: Docker is not installed. Please install docker and try again."
+  echo "Docker install guide: https://docs.docker.com/engine/install/"
   exit 1
 fi
 
-if [ "$(docker ps -q -f name=$DB_CONTAINER_NAME)" ]; then
-  docker start $DB_CONTAINER_NAME
-  echo "Database container started"
-  exit 0
+# Check if container is already running
+if docker ps -a --format '{{.Names}}' | grep -Eq "^${DB_NAME}$"; then
+  docker stop "$DB_NAME" >/dev/null
+  docker rm "$DB_NAME" >/dev/null
+  echo "Existing container '$DB_NAME' was stopped and removed."
 fi
 
-set -a
-source .env
+# Build the connection string
+CONNECTION_STRING="postgres://postgres:${DB_PASSWORD}@${DB_HOST}:5432/"
 
-DB_PASSWORD=$(echo $DATABASE_URL | awk -F':' '{print $3}' | awk -F'@' '{print $1}')
+# Start the container with generated password
+docker run --name "$DB_NAME" \
+  -e POSTGRES_PASSWORD="$DB_PASSWORD" \
+  -e POSTGRES_HOST_AUTH_METHOD=trust \
+  -d -p 5432:5432 docker.io/postgres
 
-if [ "$DB_PASSWORD" = "password" ]; then
-  echo "You are using the default database password"
-fi
+echo "Database container '$DB_NAME' was successfully created."
+echo "**Connection String:** $CONNECTION_STRING"  # Print the connection string
 
-docker run --name $DB_CONTAINER_NAME -e POSTGRES_PASSWORD=$DB_PASSWORD -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=next-payload-3 -d -p 5432:5432 docker.io/postgres
+# (Optional) Consider storing the password securely (e.g., environment variables)
 
-echo "Database container was successfully created"
+
