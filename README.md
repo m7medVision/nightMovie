@@ -19,6 +19,6 @@ npm dev
 ### TODO:
 - [ ] add rating input for the user.
 - [ ] save user data in the database.
-- [ ] make `/find` page only accessible for authenticated users.
-- [ ] create login.
-- [ ] add wishlist page. 
+- [x] make `/find` page only accessible for authenticated users.
+- [x] create login.
+- [~] add wishlist page. 
