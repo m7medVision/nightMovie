@@ -21,4 +21,4 @@ npm dev
 - [ ] save user data in the database.
 - [x] make `/find` page only accessible for authenticated users.
 - [x] create login.
-- [~] add wishlist page. 
+- [ ] add wishlist page. 
