@@ -7,23 +7,5 @@ export const Users: CollectionConfig = {
   },
   auth: true,
   fields: [
-    {
-      name: 'role',
-      type: 'select',
-      options: [
-        { label: 'Admin', value: 'admin' },
-        { label: 'User', value: 'user' },
-      ],
-    },
-    {
-      name: 'hasAccess',
-      type: 'checkbox',
-      defaultValue: false,
-    },
-    {
-      name: 'whitelist',
-      type: 'checkbox',
-      defaultValue: false,
-    },
   ],
 }

@@ -23,7 +23,7 @@ export default function LoginPage() {
   })
   async function onSubmit(data: z.infer<typeof loginSchema>) {
     const { email, password } = data
-    const res = await fetch('/api/users/login', {
+    const res = await fetch('/api/public-users/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

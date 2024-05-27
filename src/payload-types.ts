@@ -9,14 +9,19 @@
 export interface Config {
   collections: {
     users: User;
+    'public-users': PublicUser;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
   globals: {};
   locale: null;
-  user: User & {
-    collection: 'users';
-  };
+  user:
+    | (User & {
+        collection: 'users';
+      })
+    | (PublicUser & {
+        collection: 'public-users';
+      });
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -40,14 +45,38 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "public-users".
+ */
+export interface PublicUser {
+  id: number;
+  hasAccess?: boolean | null;
+  whitelist?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  password?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
   id: number;
-  user: {
-    relationTo: 'users';
-    value: number | User;
-  };
+  user:
+    | {
+        relationTo: 'users';
+        value: number | User;
+      }
+    | {
+        relationTo: 'public-users';
+        value: number | PublicUser;
+      };
   key?: string | null;
   value?:
     | {
