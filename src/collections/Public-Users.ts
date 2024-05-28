@@ -9,6 +9,9 @@ const canAccess: Access = ({ req: { user }, id }) => {
 export const PublicUsers: CollectionConfig = {
   slug: 'public-users',
   auth: true,
+  admin: {
+    useAsTitle: 'email',
+  },
   access: {
     create: () => true,
     read: canAccess,
