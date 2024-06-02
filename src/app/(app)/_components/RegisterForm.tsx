@@ -1,24 +1,63 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { SubmitHandler, useForm } from 'react-hook-form'
 import { z } from 'zod'
+import { useToast } from "@/components/ui/use-toast"
+import { title } from 'process'
 const formSchema = z.object({
   name: z.string(),
   email: z.string().email(),
 })
+type FormSchema = z.infer<typeof formSchema>
 export default function RegisterForm() {
-  const form = useForm()
+  const toast = useToast()
+  const form = useForm<FormSchema>({
+    resolver: zodResolver(formSchema),
+  })
+  const onSubmit: SubmitHandler<FormSchema> = async (data) => {
+    function randomString(length: number) {
+      const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+      let result = ''
+      for (let i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)]
+      return result
+    }
+    let options = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'User-Agent': 'insomnia/9.2.0' },
+      body: JSON.stringify({ email: data.email, name: data.name, password: randomString(16)})
+    };
+    const resp = await fetch('http://localhost:3000/api/public-users', options)
+    if (resp.ok) {
+      toast.toast({
+        title: 'Success',
+        description: 'You have successfully joined the waitlist',
+        variant: 'success',
+      })
+    } else {
+      form.setError('root', { message: 'Something went wrong' })
+    }
+  }
   return (
-    <form>
+    <form onSubmit={form.handleSubmit(onSubmit)}>
       <div className="mt-8 space-y-4">
+        {
+          form.formState.errors.root && (
+            <Alert variant='destructive'>
+              <AlertDescription>
+                {form.formState.errors.root?.message}
+              </AlertDescription>
+            </Alert>
+          )
+        }
         <div>
           <label htmlFor="hs-cover-with-gradient-form-name-1" className="sr-only">
             Full name
           </label>
           <div className="relative">
             <input
-              type="text"
-              id="hs-cover-with-gradient-form-name-1"
+              {...form.register('name', { required: true })}
               className="py-3 ps-11 pe-4 block w-full bg-white/10 border-white/20 text-white placeholder:text-white rounded-lg text-sm focus:border-white/30 focus:ring-white/30 sm:p-4 sm:ps-11"
               placeholder="Full name"
             />
@@ -41,14 +80,22 @@ export default function RegisterForm() {
             </div>
           </div>
         </div>
+        {
+          form.formState.errors.name && (
+            <Alert variant='destructive'>
+              <AlertDescription>
+                {form.formState.errors.name?.message}
+              </AlertDescription>
+            </Alert>
+          )
+        }
         <div>
           <label htmlFor="hs-cover-with-gradient-form-email-1" className="sr-only">
             Email address
           </label>
           <div className="relative">
             <input
-              type="email"
-              id="hs-cover-with-gradient-form-email-1"
+              {...form.register('email', { required: true })}
               className="py-3 ps-11 pe-4 block w-full bg-white/10 border-white/20 text-white placeholder:text-white rounded-lg text-sm focus:border-white/30 focus:ring-white/30 sm:p-4 sm:ps-11"
               placeholder="Email address"
             />
@@ -71,6 +118,15 @@ export default function RegisterForm() {
             </div>
           </div>
         </div>
+        {
+          form.formState.errors.email && (
+            <Alert variant='destructive'>
+              <AlertDescription>
+                {form.formState.errors.email?.message}
+              </AlertDescription>
+            </Alert>
+          )
+        }
         <div className="grid">
           <button
             type="submit"

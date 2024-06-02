@@ -25,6 +25,11 @@ export const PublicUsers: CollectionConfig = {
       defaultValue: false,
     },
     {
+      name: 'name',
+      type: 'text',
+      required: true,
+    },
+    {
       name: 'whitelist',
       type: 'checkbox',
       defaultValue: false,
